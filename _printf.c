@@ -4,48 +4,35 @@
  * _printf - prints anything
  * @format: the format string
  *
- *  Return: number of bytes printed
+ *  Return: number of characters printed
  */
 
 int _printf(const char *format, ...)
 {
-	int sum = 0;
-	va_list ap;
-	char *p, *start;
-	params_t params = PARAMS_INIT;
-
-	va_start(ap, format);
-
-	if (!format || (format[0] == '%' && !format[1]))
+	int printed_chars;
+	conver_t f_list[] = {
+		{"c", print_char},
+		{"s", print_string},
+		{"%", print_percent},
+		{"d", print_integer},
+		{"i", print_integer},
+		{"b", print_binary},
+		{"r", print_reversed},
+		{"R", rot13},
+		{"u", unsigned_integer},
+		{"o", print_octal},
+		{"x", print_hex},
+		{"X", print_heX},
+		{NULL, NULL}
+	};
+	va_list arg_list;
+	
+	if (format == NULL)
 		return (-1);
-
-	if (format[0] == '%' && format[1] == ' ' && !format[2])
-		return (-1);
-	for (p = (char *)format; *p; p++)
-	{
-		init_params(&params, ap);
-		if (*p != '%')
-		{
-			sum += _putchar(*p);
-			continue;
-		}
-		start = p;
-		p++;
-		while (get_flag(p, &params))
-		{
-			p++;
-		}
-		p = get_width(p, &params, ap);
-		p = get_precision(p, &params, ap);
-		if (get_modifier(p, &params))
-			p++;
-		if (!get_specifier(p))
-			sum += print_from_to(start, p,
-					params.l_modifier || params.h_modifier ? p - 1 : 0);
-		else
-			sum += get_print_func(p, ap, &params);
-	}
-	_putchar(BUF_FLUSH);
-	va_end(ap);
-	return (sum);
+	
+	va_start(arg_list, format);
+	/*calling parser function*/
+	printed_chars = parser(format, f_list, arg_list);
+	va_end(arg_list);
+	return (printed_chars);
 }
